@@ -22,7 +22,7 @@ namespace FuseeApp
         public override void Init()
         {
             // Set the clear color for the backbuffer to white (100% intensity in all color channels R, G, B, A).
-            RC.ClearColor = new float4(0, 1, 1, 1);
+            RC.ClearColor = new float4(1, 1, 1, 1);
         }
 
         // RenderAFrame is called once a frame
