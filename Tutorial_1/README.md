@@ -20,8 +20,6 @@
 
     * You can find the published files in `/pub/Desktop` or `/pub/Web` respectively.
 
-        *Note: Add picture of folder structure.*
-
 ## Basic Structure
 * This folder contains one class, `Tutorial_1.cs`. This contains the application logic, right now consisting of three methods:
 
