@@ -12,12 +12,14 @@ using Fusee.Engine.GUI;
 namespace FuseeApp
 {
 
-    [FuseeApplication(Name = "Tutorial_1_Completed", Description = "Yet another FUSEE App.")]
-    public class Tutorial_1_Completed : RenderCanvas
+    [FuseeApplication(Name = "Tutorial_2_Completed", Description = "Yet another FUSEE App.")]
+    public class Tutorial_2_Completed : RenderCanvas
     {
         private Mesh _mesh;
+        private ShaderEffect _shaderEffect;
         private string _vertexShader = AssetStorage.Get<string>("VertexShader.vert");
         private string _pixelShader = AssetStorage.Get<string>("PixelShader.frag");
+        private float _alpha;
 
         // Init is called on startup. 
         public override void Init()
@@ -25,31 +27,41 @@ namespace FuseeApp
             // Set the clear color for the backbuffer to white (100% intensity in all color channels R, G, B, A).
             RC.ClearColor = new float4(0, 1, 1, 1);
 
+            _alpha = 0;
+
             // Create a new ShaderEffect based on the _vertexShader and _pixelShader and set it as the currently used ShaderEffect
-            var shaderEffect = new ShaderEffect(
+            _shaderEffect = new ShaderEffect(
                 new[]
                 {
                     new EffectPassDeclaration{VS = _vertexShader, PS = _pixelShader, StateSet = new RenderStateSet{}}
                 },
                 new[]
                 {
-                    new EffectParameterDeclaration { Name = "DiffuseColor", Value = new float4(1, 0, 1, 1) }
+                    new EffectParameterDeclaration { Name = "DiffuseColor", Value = new float4(1, 1, 1, 1) },
+                    new EffectParameterDeclaration { Name = "alpha", Value = _alpha }
                 }
             );
 
             // Set _shader as the current ShaderEffect
-            RC.SetShaderEffect(shaderEffect);
+            RC.SetShaderEffect(_shaderEffect);
 
             // Create a new Mesh 
             _mesh = new Mesh
             {
                 Vertices = new[]
                 {
-                    new float3(-0.5f, -0.5f, 0),
-                    new float3(0.5f, -0.5f, 0),
-                    new float3(0, 0.5f, 0),
+                    new float3(-0.8165f, -0.3333f, -0.4714f),
+                    new float3(0.8165f, -0.3333f, -0.4714f),
+                    new float3(0, -0.3333f, 0.9428f),
+                    new float3(0, 1, 0),
                 },
-                Triangles = new ushort[] { 0, 1, 2 },
+                Triangles = new ushort[]
+                {
+                    0, 2, 1,    //Triangle 0 "Bottom" facing towards negative  axis.
+                    0, 1, 3,    //Triangle 1 "Back side" facing towards negative z axis.
+                    1, 2, 3,    //Triangle 2 "Right side" facing towards positive x axis.
+                    2, 0, 3,    //Triangle 3 "Left side" facing towards negative x axis.
+                },
             };
         }
 
@@ -58,6 +70,11 @@ namespace FuseeApp
         {
             // Clear the backbuffer
             RC.Clear(ClearFlags.Color | ClearFlags.Depth);
+
+            float2 speed = Mouse.Velocity;
+
+            _alpha += speed.x * 0.0001f;
+            _shaderEffect.SetEffectParam("alpha", _alpha);
 
             // Render the selected mesh, using the previously set ShaderEffect
             RC.Render(_mesh);
