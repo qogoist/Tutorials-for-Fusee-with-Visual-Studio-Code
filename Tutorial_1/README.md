@@ -165,3 +165,26 @@ Now let's create our first ShaderEffect using a simple pair of Vertex- and Pixel
     ![Example Triangle](_images/ExampleTriangle.png)
 
 * See [Tutorial 1 Completed](../Tutorial_1_Completed) for the overall state so far.
+
+## Exercise/Questions
+Investigate how the vertice's coordinates relate to pixel positions within the output window.
+
+* What are the smallest and largest x- and y-values for vertices that can be displayed within the output window?
+
+* What happens to your geometry if you re-size the output window?
+
+* What happens if you change the z-values of your vertices (currently set to 0)?
+
+Understand how the `Triangles` are indices into the `Vertices` array.
+
+* Add another vertex to the `Vertices` array.
+
+* Add another triangle (three more indices) to the `Triangles` array to display a rectangle. (Using a total of four entries in `Vertices` and six entries in `Triangles`.)
+
+* What happens if you change the order of the indices in the `Triangles` array? Try to explain the observation.
+
+Understand the concept of "the current Shader".
+
+* Add one more geometry `Mesh` and another `ShaderEffect` (setting a different color). Store both shaders in fields rather than in local variables.
+
+* Within `RenderAFrame` render each of the two meshes with a different shader (call `RC.SetShader` before `RC.Render`).
