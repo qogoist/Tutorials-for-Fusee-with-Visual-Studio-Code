@@ -10,6 +10,8 @@
 
 * Download or clone this repository to your computer and open this folder (`Tutorial_1`) in Visual Studio Code.
 
+* Since we will be working with the GLSL Shader language, install the [Language Support Extension](https://marketplace.visualstudio.com/items?itemName=slevesque.shader) for VS Code.
+
 * Go to the Debug view of Visual Studio Code by selecting it in the Activity Bar on the side (or by pressing `Ctrl+Shift+D`).
 
 * At the top, open the dropdown menu and select either `Debug in FUSEE Player` or `Debug in FUSEE Web Player`. If you click `Start Debugging` (the play icon), you should see a window with a simple white background.
@@ -60,3 +62,106 @@ You can control both steps by placing small programs on the GPU's processor. The
 
 ![Render Pipeline](_images/RenderPipelineVP.png)
 
+## Add a Shader Effect
+Now let's create our first ShaderEffect using a simple pair of Vertex- and Pixel-Shaders.
+
+* First, locate the `PixelShader.frag` and `VertexShader.vert` files in the `Assets` folder. (The `.vert` file extension is used for vertex shaders while `.frag` is used for fragment shaders, the OpenGL terminology for pixel shaders.)
+
+* Open `PixelShader.frag` and add the following code:
+
+    ```glsl
+    #ifdef GL_ES
+        precision highp float;
+    #endif
+
+    uniform vec4 DiffuseColor;
+
+    void main()
+    {
+        gl_FragColor = DiffuseColor;
+    }
+    ```
+
+    This pixel shader simply fills each pixel it is called for (`gl_FragColor`) with a color specified in the uniform variable `DiffuseColor`. There will be more explanation on uniform variables in a later tutorial, but for now it is enough to know that we can change the variable from outside the shader code itself.
+
+* Now add the following code to `VertexShader.vert`:
+
+    ```glsl
+    attribute vec3 fuVertex;
+
+    void main()
+    {
+        gl_Position = vec4(fuVertex, 1.0);
+    }
+    ```
+
+    This vertex shader takes each given incoming vertex (`fuVertex`) and copies it to the resulting vertex (`gl_Position`) while adding a fourth dimension (constantly set to 1.0).
+
+* With the shader set, let's move on to the `Tutorial_1` file. First, we need to add the shader files so we can use them later on. For that, we will define two global variables to the `Tutorial_1` class.
+
+    ```csharp
+    private string _vertexShader = AssetStorage.Get<string>("VertexShader.vert");
+    
+    private string _pixelShader = AssetStorage.Get<string>("PixelShader.frag");
+    ```
+
+* Now we will move on to the `Init` method where we will actually build the shader effect and set it as the current shader effect.
+
+    ```csharp
+    var shaderEffect = new ShaderEffect(
+        new[]
+        {
+            new EffectPassDeclaration{VS = _vertexShader, PS = _pixelShader, StateSet = new RenderStateSet{}}
+        },
+        new[]
+        {
+            new EffectParameterDeclaration { Name = "DiffuseColor", Value = new float4(1, 0, 1, 1) }
+        }
+    );
+
+    RC.SetShaderEffect(shaderEffect);
+    ```
+
+    As you can see, the constructor for the ShaderEffect takes two arguments:
+    
+    1. An array of effect passes that are applied to the geometry in the order they are called. Each effect pass contains a vertex shader, pixel shader, as well as a set of render states that are applied before each pass. Render states can be used to only render points, wireframes, as well as blend textures. For our purposes, however, we can leave that list empty, as we want a simple solid color.
+
+    2. A list of (uniform) parameters that might be used in one of the shaders in the effect passes. This is wehere we set the `DiffuseColor` for our pixel shader.
+
+## Add Mesh
+* At the `Tutorial_1` class level, create a private `Mesh` field.
+
+    ```csharp
+    private Mesh _mesh;
+    ```
+
+* Inside the `Init` method, initialize a mesh with a single triangle.
+
+    ```csharp
+    _mesh = new Mesh
+    {
+        Vertices = new[]
+        {
+            new float3(-0.5f, -0.5f, 0),
+            new float3(0.5f, -0.5f, 0),
+            new float3(0, 0.5f, 0),
+        },
+        Triangles = new ushort[] { 0, 1, 2 },
+    };
+    ```
+
+* In the `RenderAFrame` method, draw the mesh *after* the backbuffer was cleared, but *before* the backbuffer content is presented.
+
+    ```csharp
+    RC.Clear(ClearFlags.Color | ClearFlags.Depth);
+
+    RC.Render(_mesh);
+
+    Present();
+    ```
+
+* Debug the program for you favorite platform. A magenta colored triangle should fill the background.
+
+    ![Example Triangle](_images/ExampleTriangle.png)
+
+* See [Tutorial 1 Completed](../Tutorial_1_Completed) for the overall state so far.
