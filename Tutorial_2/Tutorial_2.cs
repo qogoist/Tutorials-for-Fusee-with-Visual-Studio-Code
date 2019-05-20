@@ -16,6 +16,7 @@ namespace FuseeApp
     public class Tutorial_2 : RenderCanvas
     {
         private Mesh _mesh;
+        private ShaderEffect _shaderEffect;
         private string _vertexShader = AssetStorage.Get<string>("VertexShader.vert");
         private string _pixelShader = AssetStorage.Get<string>("PixelShader.frag");
 
@@ -26,7 +27,7 @@ namespace FuseeApp
             RC.ClearColor = new float4(0, 1, 1, 1);
 
             // Create a new ShaderEffect based on the _vertexShader and _pixelShader and set it as the currently used ShaderEffect
-            var shaderEffect = new ShaderEffect(
+            _shaderEffect = new ShaderEffect(
                 new[]
                 {
                     new EffectPassDeclaration{VS = _vertexShader, PS = _pixelShader, StateSet = new RenderStateSet{}}
@@ -38,7 +39,7 @@ namespace FuseeApp
             );
 
             // Set _shader as the current ShaderEffect
-            RC.SetShaderEffect(shaderEffect);
+            RC.SetShaderEffect(_shaderEffect);
 
             // Create a new Mesh 
             _mesh = new Mesh

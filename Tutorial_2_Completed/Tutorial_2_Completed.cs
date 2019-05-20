@@ -50,10 +50,10 @@ namespace FuseeApp
             {
                 Vertices = new[]
                 {
-                    new float3(-0.8165f, -0.3333f, -0.4714f),
-                    new float3(0.8165f, -0.3333f, -0.4714f),
-                    new float3(0, -0.3333f, 0.9428f),
-                    new float3(0, 1, 0),
+                    new float3(-0.8165f, -0.3333f, -0.4714f),   //Vertex 0
+                    new float3(0.8165f, -0.3333f, -0.4714f),    //Vertex 1
+                    new float3(0, -0.3333f, 0.9428f),           //Vertex 2
+                    new float3(0, 1, 0),                        //Vertex 3
                 },
                 Triangles = new ushort[]
                 {
