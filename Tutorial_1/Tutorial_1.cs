@@ -16,8 +16,6 @@ namespace FuseeApp
     [FuseeApplication(Name = "Tutorial_1", Description = "Yet another FUSEE App.")]
     public class Tutorial_1 : RenderCanvas
     {
-
-
         // Init is called on startup. 
         public override void Init()
         {

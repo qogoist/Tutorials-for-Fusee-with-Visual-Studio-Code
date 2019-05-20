@@ -17,22 +17,8 @@ namespace FuseeApp
     {
         private ShaderEffect _shader;
         private Mesh _mesh;
-        private const string _vertexShader = @"
-            attribute vec3 fuVertex;
-        
-            void main()
-            {
-                gl_Position = vec4(fuVertex, 1.0);
-            }";
-        private const string _pixelShader = @"
-            #ifdef GL_ES
-                precision highp float;
-            #endif
-            
-            void main()
-            {
-                gl_FragColor = vec4(1, 0, 1, 1);
-            }";
+        private string _vertexShader = AssetStorage.Get<string>("VertexShader.vert");
+        private string _pixelShader = AssetStorage.Get<string>("PixelShader.frag");
 
         // Init is called on startup. 
         public override void Init()
@@ -41,7 +27,20 @@ namespace FuseeApp
             RC.ClearColor = new float4(0, 1, 1, 1);
 
             // Create a new ShaderEffect based on the _vertexShader and _pixelShader and set it as the currently used ShaderEffect
-            _shader = SimpleShaders.MakeShader(_vertexShader, _pixelShader);
+            _shader = new ShaderEffect(
+                new[]
+                {
+                    new EffectPassDeclaration{VS = _vertexShader, PS = _pixelShader, StateSet = new RenderStateSet{}}
+                },
+                new[]
+                {
+                    new EffectParameterDeclaration { Name = "DiffuseColor", Value = new float4(1, 0, 1, 1) }
+                }
+            );
+
+
+
+            // Set _shader as the current ShaderEffect
             RC.SetShaderEffect(_shader);
 
             // Create a new Mesh 
