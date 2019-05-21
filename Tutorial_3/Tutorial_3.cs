@@ -27,8 +27,6 @@ namespace FuseeApp
             // Set the clear color for the backbuffer to white (100% intensity in all color channels R, G, B, A).
             RC.ClearColor = new float4(0, 1, 1, 1);
 
-            _alpha = 0;
-
             // Create a new ShaderEffect based on the _vertexShader and _pixelShader and set it as the currently used ShaderEffect
             _shaderEffect = new ShaderEffect(
                 new[]
