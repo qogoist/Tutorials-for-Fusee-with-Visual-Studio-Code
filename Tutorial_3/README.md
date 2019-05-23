@@ -156,12 +156,14 @@ void main()
 Instead of handling `alpha` as a shader variable from the "outside" C# code, we now need ot handle `xform`. Note that we do not completely delete `_alpha`. Apply the following changes to the C# code:
 
 * Declaration:
+
     ```csharp
     private float4x4 _xform;
     private float _alpha;
     ```
 
 * Inside `Init`:
+
     ```csharp
     _xform = float4x4.Identity;
 
@@ -179,13 +181,12 @@ Instead of handling `alpha` as a shader variable from the "outside" C# code, we 
     ```
 
 * Inside `RenderAFrame`:
+
     ```csharp
     if (Mouse.LeftButton || Touch.GetTouchActive(TouchPoints.Touchpoint_0))
-    {
         _alpha -= speed.x * 0.0001f;
-    }
 
- 	_xform = float4x4.CreateRotationY(_alpha) * float4x4.CreateScale(0.5f);
+    _xform = float4x4.CreateRotationY(_alpha) * float4x4.CreateScale(0.5f);
     _shaderEffect.SetEffectParam("xform", _xform);
     ```
 
@@ -245,3 +246,150 @@ Building and running this now shows a cube perspectively displayed from the side
 * If you didn't until now: Apply a second rotation around the x-axis controlled by the mouse- or touch-velocity along the screen's y-axis to see the top and bottom faces of the cube.
 
 * What happens if you change the order of the translation and the rotation(s) in `_xform`?
+
+## More Cubes
+Now, let's add another cube. We can display two cube just by rendering our single cube twice and change the transformation matrix between the two rendering operations to make the cubes appear at different places. Here's the complete `RenderAFrame` implementation doing that:
+
+```csharp
+public override void RenderAFrame()
+{
+    // Clear the backbuffer
+    RC.Clear(ClearFlags.Color | ClearFlags.Depth);
+
+    float2 speed = Mouse.Velocity + Touch.GetVelocity(TouchPoints.Touchpoint_0);
+    if (Mouse.LeftButton || Touch.GetTouchActive(TouchPoints.Touchpoint_0))
+    {
+    	_alpha -= speed.x*0.0001f;
+    	_beta  -= speed.y*0.0001f;
+    }
+
+    // Setup matrices
+    var aspectRatio = Width / (float)Height;
+    var projection = float4x4.CreatePerspectiveFieldOfView(M.Pi * 0.25f, aspectRatio, 0.01f, 20);
+
+    // First cube
+    _xform = projection * float4x4.CreateTranslation(0, 0, 3) * float4x4.CreateRotationY(_alpha) * float4x4.CreateRotationX(_beta) * float4x4.CreateTranslation(-0.6f, 0, 0) * float4x4.CreateScale(0.5f);
+    _shaderEffect.SetEffectParam("xform", _xform);
+    RC.Render(_mesh);
+
+    // Second cube
+    _xform = projection * float4x4.CreateTranslation(0, 0, 3) * float4x4.CreateRotationY(_alpha) * float4x4.CreateRotationX(_beta) * float4x4.CreateTranslation(0.6f, 0, 0) * float4x4.CreateScale(0.5f);
+    _shaderEffect.SetEffectParam("xform", _xform);
+    RC.Render(_mesh);
+
+    // Swap buffers: Show the contents of the backbuffer (containing the currently rendered farame) on the front buffer.
+    Present();
+}
+```
+
+Debuggin this so far should produce two cubes rotating around a common center in two axes. (You might introduce `private float _beta` as a field to contain the second rotation angle.)
+
+![Two cubes around a common center](_images/TwoCubes.png)
+
+### Practice
+* Change the order of rotations and translation in both `_xform` assignments above. Here's how to do it for one:
+
+    ```csharp
+    //First cube
+    _xform = projection * float4x4.CreateTranslation(0,0,3) * float4x4.CreateTranslation(-0.6f, 0, 0) * float4x4.CreateRotationY(_alpha) * float4x4.CreateRotationX(_beta) * float4x4.CreateScale(0.5f);
+    ```
+
+    Now you should have two cubes but each is rotating arounds its own center.
+
+    ![Two cubes each rotating around its own center](_images/TwoCubes2.png)
+
+Creating and multiplying nearly the same matrices for both cubes is not at all good in terms of performance, so we will store them in variables instead.
+
+```csharp
+// Setup matrices
+var aspectRatio = Width / (float)Height;
+var projection = float4x4.CreatePerspectiveFieldOfView(M.Pi * 0.25f, aspectRatio, 0.01f, 20);
+var view = float4x4.CreateTranslation(0, 0, 3) * float4x4.CreateRotationY(_alpha) * float4x4.CreateRotationX(_beta);
+
+//First cube
+_xform = projection * view * float4x4.CreateTranslation(-0.6f, 0, 0) * float4x4.CreateScale(0.5f);
+_shaderEffect.SetEffectParam("xform", _xform);
+RC.Render(_mesh);
+```
+
+## Parent-Child relations
+Now we want to make one cube a child of another. That means we need to apply all transformations we put on one cube to the second cube as well, before we apply the second cube's transformations. We want to control each cube's local yaw (rotation around the y-axis) and pitch (rotation around the x-axis) using the keyboard, so we need to store these angles as fields on the class level:
+
+```csharp
+private float _yawCube1;
+private float _pitchCube1;
+private float _yawCube2;
+private float _pitchCube2;
+```
+
+Then, in `RenderAFrame` control two rotation angles with some of the axes provided by the `Keyboard` static Input-property.
+
+```csharp
+_yawCube1 -= Keyboard.ADAxis * 0.1f;
+_pitchCube1 += Keyboard.WSAxis * 0.1f;
+_yawCube2 -= Keyboard.LeftRightAxis * 0.1f;
+_pitchCube2 += Keyboard.UpDownAxis * 0.1f;
+```
+
+to create a fully-fledged model-transformation we want to combine a translation along a 3D vector, and three rotations, each around the main axes. Rotation should take place around a freely defined rotation center, so before applying rotations, we need to translate the entire model to the rotation center (pivot point) and out of that point afterwards. Because we will be applying this combined transformation for each model we are about to display we will create a method for that. On the class leve, define the following method:
+
+```csharp
+static float4x4 ModelXForm(float3 pos, float3 rot, float3 pivot)
+   {
+    return float4x4.CreateTranslation(pos + pivot) * float4x4.CreateRotationY(rot.y) * float4x4.CreateRotationX(rot.x)
+    * float4x4.CreateRotationZ(rot.z) * float4x4.CreateTranslation(-pivot);
+}
+```
+
+Now we can call this method from within `RenderAFrame` for each model we want to transform.
+
+```csharp
+//First cube
+var cube1Model = ModelXForm(new float3(-0.6f, 0, 0), new float3(_pitchCube1, _yawCube1, 0), new float3(0, 0, 0));
+_xform = projection * view * cube1Model * float4x4.CreateScale(0.5f, 0.1f, 0.1f);
+_shaderEffect.SetEffectParam("xform", _xform);
+RC.Render(_mesh);
+
+//Second cube
+var cube2Model = ModelXForm(new float3(1.0f, 0, 0), new float3(_pitchCube2, _yawCube2, 0), new float3(-0.5f, 0, 0));
+_xform = projection * view * cube1Model * cube2Model * float4x4.CreateScale(0.5f, 0.1f, 0.1f);
+_shaderEffect.SetEffectParam("xform", _xform);
+RC.Render(_mesh);
+```
+
+As a result, we can steer each cube individually: The left cube with keys `W`, `A`, `S`, and `D`, and the right cube using `Left`, `Right` , `Up`, and `Down`.
+
+Still, both cubes are indipendent from another. To change that, introduce the following changes to `RenderAFrame`:
+
+* Scale both cubes to make them appear as bars.
+
+    ```csharp
+    float4x4.CreateScale(0.5f, 0.1f, 0.1f);
+    ```
+
+* Apply all transformations of the first cube to the second cube as well.
+
+    ```csharp
+    _xfrom = projection * view * cube1Model * cube2Model * float4x4.CreateScale(0.5f, 0.1f, 0.1f);
+    ```
+
+* Translate the second cube relateive to the first cube (1 along the x axis).
+
+* Make the second cube rotate around its right border, rather than its center. (Set pivot point to `new float3(-0.5f, 0, 0)`.)
+
+As a result, you should be able to control the overal rotation of the arm using WASD and additionally control the joint connecting both bars using the arrow keys.
+
+![Arm example](_images/TwoBars.png)
+
+## Exercise
+* Create a little robot made out of a base, an upper arm, and a forearm. Use two cubes to build the base, and one cube each for the upper arm and forearm.
+
+    ![Robot](_images/Robot.png)
+
+* Use the `Keyboard` axes to control the yaw of the base and the pitches of upper arm and forearm.
+
+* Set the arms pivot points to simulate physical joints at the connecting points.
+
+* Limit the camera pitch movement (`_beta`) to the range from -PI/2 to PI/2.
+
+* For touch devices: Try to figure out how to best match the five degrees of freedom (Camera pitch and yaw, three robot axes) to the six existing touch axes: Single point speed (2D), Two-Point-Midpoint-Speed (2D), Two-Point-Distance-Speed(1D), Two-Point-Angle-Speed (1D).
