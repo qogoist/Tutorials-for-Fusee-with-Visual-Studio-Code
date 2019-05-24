@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Fusee.Base.Common;
 using Fusee.Base.Core;
 using Fusee.Engine.Common;
@@ -8,29 +9,27 @@ using Fusee.Serialization;
 using static Fusee.Engine.Core.Input;
 using static Fusee.Engine.Core.Time;
 using Fusee.Engine.GUI;
+using System.Linq;
+using Fusee.Xene;
 
 namespace FuseeApp
 {
 
-    [FuseeApplication(Name = "Tutorial_4", Description = "Yet another FUSEE App.")]
-    public class Tutorial_4 : RenderCanvas
+    [FuseeApplication(Name = "Tutorial_2_Completed", Description = "Yet another FUSEE App.")]
+    public class Tutorial_2_Completed : RenderCanvas
     {
-        // Horizontal and vertical rotation Angles for the displayed object 
-        private static float _angleHorz = M.PiOver4, _angleVert;
-        
-        // Horizontal and vertical angular speed
-        private static float _angleVelHorz, _angleVelVert;
+        private Mesh _mesh;
+        private ShaderEffect _shaderEffect;
+        private string _vertexShader = AssetStorage.Get<string>("VertexShader.vert");
+        private string _pixelShader = AssetStorage.Get<string>("PixelShader.frag");
+        private float _alpha;
+        private float _beta;
+        private float4x4 _xform;
 
-        // Overall speed factor. Change this to adjust how fast the rotation reacts to input
-        private const float RotationSpeed = 7;
-
-        // Damping factor 
-        private const float Damping = 0.8f;
-
-        private SceneContainer _rocketScene;
-        private SceneRenderer _sceneRenderer;
-
-        private bool _keys;
+        private float _yawCube1;
+        private float _pitchCube1;
+        private float _yawCube2;
+        private float _pitchCube2;
 
         // Init is called on startup. 
         public override void Init()
@@ -38,73 +37,74 @@ namespace FuseeApp
             // Set the clear color for the backbuffer to white (100% intensity in all color channels R, G, B, A).
             RC.ClearColor = new float4(1, 1, 1, 1);
 
-            // Load the rocket model
-            _rocketScene = AssetStorage.Get<SceneContainer>("RocketModel.fus");
+            _xform = float4x4.Identity;
 
-            // Wrap a SceneRenderer around the model.
-            _sceneRenderer = new SceneRenderer(_rocketScene);
+            // Create a new ShaderEffect based on the _vertexShader and _pixelShader and set it as the currently used ShaderEffect
+            _shaderEffect = new ShaderEffect(
+                new[]
+                {
+                    new EffectPassDeclaration{VS = _vertexShader, PS = _pixelShader, StateSet = new RenderStateSet{}}
+                },
+                new[]
+                {
+                    new EffectParameterDeclaration { Name = "DiffuseColor", Value = new float4(1, 1, 1, 1) },
+                    new EffectParameterDeclaration { Name = "xform", Value = _xform }
+                }
+            );
+
+            // Set _shader as the current ShaderEffect
+            RC.SetShaderEffect(_shaderEffect);
+
+            //Load the scene file "Cube.fus"
+            SceneContainer scene = AssetStorage.Get<SceneContainer>("Cube.fus");
+
+            //Extract the First object of type Mesh found in scene's list of Children.
+            _mesh = scene.Children.FindComponents<Mesh>(c => true).First();
         }
 
         // RenderAFrame is called once a frame
         public override void RenderAFrame()
         {
-
             // Clear the backbuffer
             RC.Clear(ClearFlags.Color | ClearFlags.Depth);
 
-            // Mouse and keyboard movement
-            if (Keyboard.LeftRightAxis != 0 || Keyboard.UpDownAxis != 0)
+            float2 speed = Mouse.Velocity + Touch.GetVelocity(TouchPoints.Touchpoint_0);
+            if (Mouse.LeftButton || Touch.GetTouchActive(TouchPoints.Touchpoint_0))
             {
-                _keys = true;
-            }             
-
-            if (Mouse.LeftButton)
-            {
-                _keys = false;
-                _angleVelHorz = -RotationSpeed * Mouse.XVel * DeltaTime * 0.0005f;
-                _angleVelVert = -RotationSpeed * Mouse.YVel * DeltaTime * 0.0005f;
-            }
-            else if (Touch.GetTouchActive(TouchPoints.Touchpoint_0))
-            {
-                _keys = false;
-                var touchVel = Touch.GetVelocity(TouchPoints.Touchpoint_0);
-                _angleVelHorz = -RotationSpeed * touchVel.x * DeltaTime * 0.0005f;
-                _angleVelVert = -RotationSpeed * touchVel.y * DeltaTime * 0.0005f;
-            }
-            else
-            {
-                if (_keys)
-                {
-                    _angleVelHorz = -RotationSpeed * Keyboard.LeftRightAxis * DeltaTime;
-                    _angleVelVert = -RotationSpeed * Keyboard.UpDownAxis * DeltaTime;
-                }
-                else
-                {
-                    var curDamp = (float)System.Math.Exp(-Damping * DeltaTime);
-                    _angleVelHorz *= curDamp;
-                    _angleVelVert *= curDamp;
-                }
+                _alpha -= speed.x * 0.0001f;
+                _beta -= speed.y * 0.0001f;
             }
 
+            _yawCube1 -= Keyboard.ADAxis * 0.1f;
+            _pitchCube1 += Keyboard.WSAxis * 0.1f;
+            _yawCube2 -= Keyboard.LeftRightAxis * 0.1f;
+            _pitchCube2 += Keyboard.UpDownAxis * 0.1f;
 
-            _angleHorz += _angleVelHorz;
-            _angleVert += _angleVelVert;
+            //Setip matrices
+            var aspectRatio = Width / (float)Height;
+            var projection = float4x4.CreatePerspectiveFieldOfView(M.Pi * 0.25f, aspectRatio, 0.01f, 20);
+            var view = float4x4.CreateTranslation(0, 0, 3) * float4x4.CreateRotationY(_alpha) * float4x4.CreateRotationX(_beta);
 
-            // Create the camera matrix and set it as the current ModelView transformation
-            var mtxRot = float4x4.CreateRotationX(_angleVert) * float4x4.CreateRotationY(_angleHorz);
-            var mtxCam = float4x4.LookAt(0, 0.2f, -6, 0, 1.5f, 0, 0, 1, 0);
-            RC.ModelView = mtxCam * mtxRot;
+            //First cube
+            var cube1Model = ModelXForm(new float3(-0.6f, 0, 0), new float3(_pitchCube1, _yawCube1, 0), new float3(0, 0, 0));
+            _xform = projection * view * cube1Model * float4x4.CreateScale(0.5f, 0.1f, 0.1f);
+            _shaderEffect.SetEffectParam("xform", _xform);
+            RC.Render(_mesh);
 
-            // Render the scene loaded in Init()
-            _sceneRenderer.Render(RC);
+            //Second cube
+            var cube2Model = ModelXForm(new float3(1.0f, 0, 0), new float3(_pitchCube2, _yawCube2, 0), new float3(-0.5f, 0, 0));
+            _xform = projection * view * cube1Model * cube2Model * float4x4.CreateScale(0.5f, 0.1f, 0.1f);
+            _shaderEffect.SetEffectParam("xform", _xform);
+            RC.Render(_mesh);
 
             // Swap buffers: Show the contents of the backbuffer (containing the currently rendered frame) on the front buffer.
             Present();
         }
 
-        private InputDevice Creator(IInputDeviceImp device)
+        static float4x4 ModelXForm(float3 pos, float3 rot, float3 pivot)
         {
-            throw new NotImplementedException();
+            return float4x4.CreateTranslation(pos + pivot) * float4x4.CreateRotationY(rot.y) * float4x4.CreateRotationX(rot.x)
+                    * float4x4.CreateRotationZ(rot.z) * float4x4.CreateTranslation(-pivot);
         }
 
         // Is called when the window was resized
@@ -114,7 +114,7 @@ namespace FuseeApp
             RC.Viewport(0, 0, Width, Height);
 
             // Create a new projection matrix generating undistorted images on the new aspect ratio.
-            var aspectRatio = Width/(float) Height;
+            var aspectRatio = Width / (float)Height;
 
             // 0.25*PI Rad -> 45° Opening angle along the vertical direction. Horizontal opening angle is calculated based on the aspect ratio
             // Front clipping happens at 0.01 (Objects nearer than 1 world unit get clipped)
