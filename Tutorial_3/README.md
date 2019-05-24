@@ -90,7 +90,7 @@ Now we need to pass trough the normal information provided with the vertices. If
 
     void main()
     {
-        gl_FragColor = vec4(normal * 0.5 + 0.5, 1.0);
+        gl_FragColor = DiffuseColor * vec4(normal * 0.5 + 0.5, 1.0);
     }
     ```
 
