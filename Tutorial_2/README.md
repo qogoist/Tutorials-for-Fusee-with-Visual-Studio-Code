@@ -214,6 +214,8 @@ As you can see, we now increment `_alpha` based on the speed of the mouse along 
 
 Debuggin this program will give you interactive control over the rotation angle.
 
+See [Tutorial 2 Completed](../Tutorial_2_Completed) for the overall state so far.
+
 ## Exercise
 * Create a more complex geometry (e.g. a little house).
 

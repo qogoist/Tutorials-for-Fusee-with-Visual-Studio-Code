@@ -41,7 +41,6 @@ namespace FuseeApp
                 },
                 new[]
                 {
-                    new EffectParameterDeclaration { Name = "DiffuseColor", Value = new float4(1, 1, 1, 1) },
                     new EffectParameterDeclaration { Name = "albedo", Value = float3.One }
                 }
             );

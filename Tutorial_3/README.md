@@ -381,6 +381,8 @@ As a result, you should be able to control the overal rotation of the arm using 
 
 ![Arm example](_images/TwoBars.png)
 
+See [Tutorial 3 Completed](../Tutorial_3_Completed) for the overall state so far.
+
 ## Exercise
 * Create a little robot made out of a base, an upper arm, and a forearm. Use two cubes to build the base, and one cube each for the upper arm and forearm.
 
