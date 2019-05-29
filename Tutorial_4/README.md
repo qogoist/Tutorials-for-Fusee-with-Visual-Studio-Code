@@ -23,13 +23,16 @@ public override void Init()
     //Set the clear color for the backbuffer to white.
     Rc.ClearColor = new float4(1, 1, 1, 1);
 
+    var vertexShader = AssetStorage.Get<string>("VertexShader.vert");
+    var pixelShader = AssetStorage.Get<string>("PixelShader.frag");
+
     _xform = float4x4.identity;
 
     //Create a new ShaderEffect 
-    _shaderEffect = new ShaderEffect(
+    var shaderEffect = new ShaderEffect(
         new[]
         {
-            new EffectPassDeclaration{VS = _vertexShader, PS = _pixelShader, StateSet = new RenderStateSet{}}
+            new EffectPassDeclaration{VS = vertexShader, PS = pixelShader, StateSet = new RenderStateSet{}}
         },
         new[]
         {
@@ -38,7 +41,7 @@ public override void Init()
         }
     );
 
-    RC.SetShaderEffect(_shaderEffect);
+    RC.SetShaderEffect(shaderEffect);
 
     //Load the scene file "Cube.fus"
     SceneContainer scene = AssetStorage.Get<SceneContainer>("Cube.fus");
@@ -96,7 +99,7 @@ Quite a lot - but keep in mind that these matrices are the vehicles that bring c
     RC.ModelView = view * cube1Model * float4x4.CreateScale(0.5f, 0.1f, 0.1f);
     ```
 
-* At both places delete the `_shaderEffect.SetEffectParam("xform", _xform)` line below since FUSEE takes care of passing the contents of `RC.ModelView` up to the vertex shader.
+* At both places delete the `RC.SetFXParam("xform", _xform)` line below since FUSEE takes care of passing the contents of `RC.ModelView` up to the vertex shader.
 
 As a result, the application should run with no visible changes. So why did we do that? There are a number of advantages in using these pre-defined matrices over out first apporach using our self-defined `_xform`.
 
@@ -106,7 +109,7 @@ As a result, the application should run with no visible changes. So why did we d
 
 3. FUSEE checks shader code if any of the above matrices are declared as `uniform` variables and only calculates/propagates the matrices needed by a shader.
 
-4. When replacing the current shader during rendering, FUSEE automatically updates any of the matrices above. No need to call `_shaderEffect.SetEffectParam` after each shader change.
+4. When replacing the current shader during rendering, FUSEE automatically updates any of the matrices above. No need to call `RC.SetFXParam()` after each shader change.
 
 Now let's apply further changes to the current state of `RenderAFrame`.
 
@@ -257,7 +260,7 @@ Now, let's set up our pixel shader to handle the `albedo`:
 
 ```glsl
 ...
-uniform vec3 albed;
+uniform vec3 albedo;
 
 void main()
 {
@@ -288,10 +291,10 @@ In our `Init` method, load the meshes and then fill the `_sceneList` with `Scene
 public override void Init()
 {
     // Initialize shader(s)
-    _shaderEffect = new ShaderEffect(
+    var shaderEffect = new ShaderEffect(
         new[]
         {
-            new EffectPassDeclaration{VS = _vertexShader, PS = _pixelShader, StateSet = new RenderStateSet{}}
+            new EffectPassDeclaration{VS = vertexShader, PS = pixelShader, StateSet = new RenderStateSet{}}
         },
         new[]
         {
@@ -299,7 +302,7 @@ public override void Init()
         }
     );
 
-    RC.SetShaderEffect(_shaderEffect);
+    RC.SetShaderEffect(shaderEffect);
 
     // Load some meshes
     Mesh cone = LoadMesh("Cone.fus");
@@ -357,7 +360,7 @@ public override void RenderAFrame()
     foreach (var so in _sceneList)
     {
         RC.ModelView = view * ModelXForm(so.Pos, so.Rot, so.Pivot) * float4x4.CreateScale(so.ModelScale);
-        _shaderEffec.SetEffectParam("albedo", so.Albedo);_
+        RC.SetFXParam("albedo", so.Albedo);
         RC.Render(so.Mesh);
     }
 
@@ -427,7 +430,7 @@ void RenderSceneOb(SceneOb so, float4x4 modelView)
     if (so.Mesh != null)
     {
         RC.ModelView = modelView * float4x4.CreateScale(so.ModelScale);
-        _shaderEffect.SetEffectParam("albedo", so.Albedo);
+        RC.SetFXParam("albedo", so.Albedo);
         RC.Render(so.Mesh);
     }
 

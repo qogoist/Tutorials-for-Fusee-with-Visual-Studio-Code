@@ -19,9 +19,6 @@ namespace FuseeApp
     public class Tutorial_2_Completed : RenderCanvas
     {
         private Mesh _mesh;
-        private ShaderEffect _shaderEffect;
-        private string _vertexShader = AssetStorage.Get<string>("VertexShader.vert");
-        private string _pixelShader = AssetStorage.Get<string>("PixelShader.frag");
         private float _alpha;
         private float _beta;
         private float4x4 _xform;
@@ -37,13 +34,16 @@ namespace FuseeApp
             // Set the clear color for the backbuffer to white (100% intensity in all color channels R, G, B, A).
             RC.ClearColor = new float4(1, 1, 1, 1);
 
+            var vertexShader = AssetStorage.Get<string>("VertexShader.vert");
+            var pixelShader = AssetStorage.Get<string>("PixelShader.frag");
+
             _xform = float4x4.Identity;
 
             // Create a new ShaderEffect based on the _vertexShader and _pixelShader and set it as the currently used ShaderEffect
-            _shaderEffect = new ShaderEffect(
+            var shaderEffect = new ShaderEffect(
                 new[]
                 {
-                    new EffectPassDeclaration{VS = _vertexShader, PS = _pixelShader, StateSet = new RenderStateSet{}}
+                    new EffectPassDeclaration{VS = vertexShader, PS = pixelShader, StateSet = new RenderStateSet{}}
                 },
                 new[]
                 {
@@ -53,7 +53,7 @@ namespace FuseeApp
             );
 
             // Set _shader as the current ShaderEffect
-            RC.SetShaderEffect(_shaderEffect);
+            RC.SetShaderEffect(shaderEffect);
 
             //Load the scene file "Cube.fus"
             SceneContainer scene = AssetStorage.Get<SceneContainer>("Cube.fus");
@@ -88,13 +88,13 @@ namespace FuseeApp
             //First cube
             var cube1Model = ModelXForm(new float3(-0.6f, 0, 0), new float3(_pitchCube1, _yawCube1, 0), new float3(0, 0, 0));
             _xform = projection * view * cube1Model * float4x4.CreateScale(0.5f, 0.1f, 0.1f);
-            _shaderEffect.SetEffectParam("xform", _xform);
+            RC.SetFXParam("xform", _xform);
             RC.Render(_mesh);
 
             //Second cube
             var cube2Model = ModelXForm(new float3(1.0f, 0, 0), new float3(_pitchCube2, _yawCube2, 0), new float3(-0.5f, 0, 0));
             _xform = projection * view * cube1Model * cube2Model * float4x4.CreateScale(0.5f, 0.1f, 0.1f);
-            _shaderEffect.SetEffectParam("xform", _xform);
+            RC.SetFXParam("xform", _xform);
             RC.Render(_mesh);
 
             // Swap buffers: Show the contents of the backbuffer (containing the currently rendered frame) on the front buffer.

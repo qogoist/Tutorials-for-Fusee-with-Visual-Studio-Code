@@ -19,10 +19,7 @@ namespace FuseeApp
     public class Tutorial_4_Completed : RenderCanvas
     {
         private Mesh _mesh;
-        private ShaderEffect _shaderEffect;
         private SceneOb _root;
-        private string _vertexShader = AssetStorage.Get<string>("VertexShader.vert");
-        private string _pixelShader = AssetStorage.Get<string>("PixelShader.frag");
         private float _alpha;
         private float _beta;
         private float _yawCube1;
@@ -33,11 +30,14 @@ namespace FuseeApp
         // Init is called on startup. 
         public override void Init()
         {
+            var vertexShader = AssetStorage.Get<string>("VertexShader.vert");
+            var pixelShader = AssetStorage.Get<string>("PixelShader.frag");
+
             // Initialize shader(s)
-            _shaderEffect = new ShaderEffect(
+            var shaderEffect = new ShaderEffect(
                 new[]
                 {
-                    new EffectPassDeclaration{VS = _vertexShader, PS = _pixelShader, StateSet = new RenderStateSet{}}
+                    new EffectPassDeclaration{VS = vertexShader, PS = pixelShader, StateSet = new RenderStateSet{}}
                 },
                 new[]
                 {
@@ -45,7 +45,7 @@ namespace FuseeApp
                 }
             );
 
-            RC.SetShaderEffect(_shaderEffect);
+            RC.SetShaderEffect(shaderEffect);
 
             // Load some meshes
             Mesh cone = LoadMesh("Cone.fus");
@@ -120,7 +120,7 @@ namespace FuseeApp
             if (so.Mesh != null)
             {
                 RC.ModelView = modelView * float4x4.CreateScale(so.ModelScale);
-                _shaderEffect.SetEffectParam("albedo", so.Albedo);
+                RC.SetFXParam("albedo", so.Albedo);
                 RC.Render(so.Mesh);
             }
 
