@@ -111,7 +111,7 @@ _alpha = 0;
 var shaderEffect = new ShaderEffect(
     new[]
     {
-        new EffectPassDeclaration{VS = _vertexShader, PS = _pixelShader, StateSet = new RenderStateSet{}}
+        new EffectPassDeclaration{VS = vertexShader, PS = pixelShader, StateSet = new RenderStateSet{}}
     },
     new[]
     {

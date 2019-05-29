@@ -167,10 +167,10 @@ Instead of handling `alpha` as a shader variable from the "outside" C# code, we 
     ```csharp
     _xform = float4x4.Identity;
 
-    _shaderEffect = new ShaderEffect(
+    var shaderEffect = new ShaderEffect(
         new[]
         {
-            new EffectPassDeclaration{VS = _vertexShader, PS = _pixelShader, StateSet = new RenderStateSet{}}
+            new EffectPassDeclaration{VS = vertexShader, PS = pixelShader, StateSet = new RenderStateSet{}}
         },
         new[]
         {
@@ -187,7 +187,7 @@ Instead of handling `alpha` as a shader variable from the "outside" C# code, we 
         _alpha -= speed.x * 0.0001f;
 
     _xform = float4x4.CreateRotationY(_alpha) * float4x4.CreateScale(0.5f);
-    _shaderEffect.SetEffectParam("xform", _xform);
+    RC.SetFXParam("xform", _xform);
     ```
 
     Note that we changed the operation on `_alpha` from `+=` to `-=`. This is due to the fact that from now on we will be using FUSEE's matrix calculation methods, which operate on a left-handed coordinate system, instead of the rigt-handed coordinate system implicitly assumed by OpenGL.
@@ -269,12 +269,12 @@ public override void RenderAFrame()
 
     // First cube
     _xform = projection * float4x4.CreateTranslation(0, 0, 3) * float4x4.CreateRotationY(_alpha) * float4x4.CreateRotationX(_beta) * float4x4.CreateTranslation(-0.6f, 0, 0) * float4x4.CreateScale(0.5f);
-    _shaderEffect.SetEffectParam("xform", _xform);
+    RC.SetFXParam("xform", _xform);
     RC.Render(_mesh);
 
     // Second cube
     _xform = projection * float4x4.CreateTranslation(0, 0, 3) * float4x4.CreateRotationY(_alpha) * float4x4.CreateRotationX(_beta) * float4x4.CreateTranslation(0.6f, 0, 0) * float4x4.CreateScale(0.5f);
-    _shaderEffect.SetEffectParam("xform", _xform);
+    RC.SetFXParam("xform", _xform);
     RC.Render(_mesh);
 
     // Swap buffers: Show the contents of the backbuffer (containing the currently rendered farame) on the front buffer.
@@ -308,7 +308,7 @@ var view = float4x4.CreateTranslation(0, 0, 3) * float4x4.CreateRotationY(_alpha
 
 //First cube
 _xform = projection * view * float4x4.CreateTranslation(-0.6f, 0, 0) * float4x4.CreateScale(0.5f);
-_shaderEffect.SetEffectParam("xform", _xform);
+RC.SetFXParam("xform", _xform);
 RC.Render(_mesh);
 ```
 
@@ -347,13 +347,13 @@ Now we can call this method from within `RenderAFrame` for each model we want to
 //First cube
 var cube1Model = ModelXForm(new float3(-0.6f, 0, 0), new float3(_pitchCube1, _yawCube1, 0), new float3(0, 0, 0));
 _xform = projection * view * cube1Model * float4x4.CreateScale(0.5f, 0.1f, 0.1f);
-_shaderEffect.SetEffectParam("xform", _xform);
+RC.SetFXParam("xform", _xform);
 RC.Render(_mesh);
 
 //Second cube
 var cube2Model = ModelXForm(new float3(1.0f, 0, 0), new float3(_pitchCube2, _yawCube2, 0), new float3(-0.5f, 0, 0));
 _xform = projection * view * cube1Model * cube2Model * float4x4.CreateScale(0.5f, 0.1f, 0.1f);
-_shaderEffect.SetEffectParam("xform", _xform);
+RC.SetFXParam("xform", _xform);
 RC.Render(_mesh);
 ```
 
