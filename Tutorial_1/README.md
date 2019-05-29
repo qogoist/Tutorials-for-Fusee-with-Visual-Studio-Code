@@ -95,23 +95,16 @@ Now let's create our first ShaderEffect using a simple pair of Vertex- and Pixel
 
     This vertex shader takes each given incoming vertex (`fuVertex`) and copies it to the resulting vertex (`gl_Position`) while adding a fourth dimension (constantly set to 1.0).
 
-* With the shader set, let's move on to the `Tutorial_1` file. First, we need to add the shader files so we can use them later on. For that, we will define three fields to the `Tutorial_1` class.
+* Now we will move on to the `Init` method in our `Tutorial_1` class, where we will get import the shaders and build a `ShaderEffect`.
 
     ```csharp
-    private ShaderEffect _shaderEffect;
+    var vertexShader = AssetStorage.Get<string>("VertexShader.vert");
+    var vertexShader = AssetStorage.Get<string>("PixelShader.frag");
 
-    private string _vertexShader = AssetStorage.Get<string>("VertexShader.vert");
-    
-    private string _pixelShader = AssetStorage.Get<string>("PixelShader.frag");
-    ```
-
-* Now we will move on to the `Init` method where we will actually build the shader effect and set it as the current shader effect.
-
-    ```csharp
-    _shaderEffect = new ShaderEffect(
+    var shaderEffect = new ShaderEffect(
         new[]
         {
-            new EffectPassDeclaration{VS = _vertexShader, PS = _pixelShader, StateSet = new RenderStateSet{}}
+            new EffectPassDeclaration{VS = vertexShader, PS = pixelShader, StateSet = new RenderStateSet{}}
         },
         new[]
         {
@@ -119,7 +112,7 @@ Now let's create our first ShaderEffect using a simple pair of Vertex- and Pixel
         }
     );
 
-    RC.SetShaderEffect(_shaderEffect);
+    RC.SetShaderEffect(shaderEffect);
     ```
 
     As you can see, the constructor for the ShaderEffect takes two arguments:
