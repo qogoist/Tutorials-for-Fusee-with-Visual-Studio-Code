@@ -108,7 +108,7 @@ Inside the `Init` method, we will now initialize `_alpha` and make a new `Effect
 ```csharp
 _alpha = 0;
 
-_shaderEffect = new ShaderEffect(
+var shaderEffect = new ShaderEffect(
     new[]
     {
         new EffectPassDeclaration{VS = _vertexShader, PS = _pixelShader, StateSet = new RenderStateSet{}}
@@ -125,7 +125,7 @@ Then, in the `RenderAFrame` method, we can alter the contents of `_alpha` and th
 
 ```csharp
 _alpha += 0.01f;
-_shaderEffect.SetEffectParam("alpha", _alpha)
+RC.SetFXParam("alpha", _alpha);
 ```
 
 This way, each frame the angle `alpha` will be incremented about 0.01 radians.

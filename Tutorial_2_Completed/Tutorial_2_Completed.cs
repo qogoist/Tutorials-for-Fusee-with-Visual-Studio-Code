@@ -16,9 +16,6 @@ namespace FuseeApp
     public class Tutorial_2_Completed : RenderCanvas
     {
         private Mesh _mesh;
-        private ShaderEffect _shaderEffect;
-        private string _vertexShader = AssetStorage.Get<string>("VertexShader.vert");
-        private string _pixelShader = AssetStorage.Get<string>("PixelShader.frag");
         private float _alpha;
 
         // Init is called on startup. 
@@ -27,13 +24,16 @@ namespace FuseeApp
             // Set the clear color for the backbuffer to white (100% intensity in all color channels R, G, B, A).
             RC.ClearColor = new float4(0, 1, 1, 1);
 
+            var vertexShader = AssetStorage.Get<string>("VertexShader.vert");
+            var pixelShader = AssetStorage.Get<string>("PixelShader.frag");
+
             _alpha = 0;
 
             // Create a new ShaderEffect based on the _vertexShader and _pixelShader and set it as the currently used ShaderEffect
-            _shaderEffect = new ShaderEffect(
+            var shaderEffect = new ShaderEffect(
                 new[]
                 {
-                    new EffectPassDeclaration{VS = _vertexShader, PS = _pixelShader, StateSet = new RenderStateSet{}}
+                    new EffectPassDeclaration{VS = vertexShader, PS = pixelShader, StateSet = new RenderStateSet{}}
                 },
                 new[]
                 {
@@ -43,7 +43,7 @@ namespace FuseeApp
             );
 
             // Set _shader as the current ShaderEffect
-            RC.SetShaderEffect(_shaderEffect);
+            RC.SetShaderEffect(shaderEffect);
 
             // Create a new Mesh 
             _mesh = new Mesh
@@ -74,7 +74,7 @@ namespace FuseeApp
             float2 speed = Mouse.Velocity;
 
             _alpha += speed.x * 0.0001f;
-            _shaderEffect.SetEffectParam("alpha", _alpha);
+            RC.SetFXParam("alpha", _alpha);
 
             // Render the selected mesh, using the previously set ShaderEffect
             RC.Render(_mesh);
