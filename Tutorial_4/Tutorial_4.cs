@@ -15,8 +15,8 @@ using Fusee.Xene;
 namespace FuseeApp
 {
 
-    [FuseeApplication(Name = "Tutorial_2_Completed", Description = "Yet another FUSEE App.")]
-    public class Tutorial_2_Completed : RenderCanvas
+    [FuseeApplication(Name = "Tutorial_4", Description = "Yet another FUSEE App.")]
+    public class Tutorial_4 : RenderCanvas
     {
         private Mesh _mesh;
         private float _alpha;

@@ -71,18 +71,8 @@ In computer science this problem and its solution istreated under the keyword **
 
 To implement your own Rendering Visitor, you should do the following.
 
-1. Create a class derived from `Fusee.Xene.SceneVisitor` and add three visitor methods for mesh, transform, and shader effect components:
+1. Create a class derived from `Fusee.Xene.SceneVisitor` within the `Tutorial_5.cs` file, and add three visitor methods for mesh, transform, and shader effect components:
     ```csharp
-    using System;
-    using System.Collections.Generic;
-    using Fusee.Base.Common;
-    using Fusee.Base.Core;
-    using Fusee.Engine.Common;
-    using Fusee.Engine.Core;
-    using Fusee.Math.Core;
-    using Fusee.Serialization;
-    using Fusee.Xene;
-
     class Renderer : SceneVisitor
     {
         [VisitMethod]
