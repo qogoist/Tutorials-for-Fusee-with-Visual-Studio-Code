@@ -12,4 +12,4 @@ A tutorial to get familiar with [FUSEE](http://www.fusee3d.org)
 
 * [Tutorial 4](Tutorial_4): Hierarchies, SceneGraph, Simple Lighting Calculation.
 
-* [Tutorial 5](Tutorial_5): FUSEE's built in SceneGraph, Specular Lights.
+* [Tutorial 5](Tutorial_5): FUSEE's built-in SceneGraph, Specular Lights.
