@@ -30,12 +30,12 @@ namespace FuseeApp
             var shaderEffect = new ShaderEffect(
                 new[]
                 {
-                new EffectPassDeclaration{VS = vertexShader, PS = pixelShader, StateSet = new RenderStateSet{}}
+                    new EffectPassDeclaration{VS = vertexShader, PS = pixelShader, StateSet = new RenderStateSet{}}
                 },
                 new[]
                 {
-                new EffectParameterDeclaration { Name = "albedo", Value = float3.One },
-                new EffectParameterDeclaration { Name = "shininess", Value = 0 }
+                    new EffectParameterDeclaration { Name = "albedo", Value = float3.One },
+                    new EffectParameterDeclaration { Name = "shininess", Value = 0 }
                 }
             );
             RC.SetShaderEffect(shaderEffect);
