@@ -53,8 +53,6 @@ namespace FuseeApp
                     new EffectParameterDeclaration { Name = "shininess", Value = 0 },
                     new EffectParameterDeclaration { Name = "specfactor", Value = 0 },
                     new EffectParameterDeclaration { Name = "speccolor", Value = float3.One },
-                    new EffectParameterDeclaration { Name = "ambientcolor", Value = float3.Zero },
-                    new EffectParameterDeclaration { Name = "texture", Value = _leavesTexture },
                     new EffectParameterDeclaration { Name = "texmix", Value = 0.0f }
                 }
             );
@@ -88,13 +86,11 @@ namespace FuseeApp
             RC.SetFXParam("specfactor", shader.Effect.GetEffectParam("SpecularIntensity"));
             RC.SetFXParam("speccolor", shader.Effect.GetEffectParam("SpecularColor"));
             RC.SetFXParam("albedo", shader.Effect.GetEffectParam("DiffuseColor"));
-            RC.SetFXParam("ambientcolor", shader.Effect.GetEffectParam("allLights[0].intensities"));
-
-            if (shader.Effect.GetEffectParam("DiffuseTexture").ToString() == "Fusee.Engine.Core.Texture")
+            
+            if (CurrentNode.Name.Contains("Kugel"))
             {
                 RC.SetFXParam("texture", _leavesTexture);
                 RC.SetFXParam("texmix", 1.0f);
-                Diagnostics.Log("Texture color applied");
             }
             else
             {

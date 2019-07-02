@@ -25,6 +25,5 @@ void main() {
     intensitySpec = specfactor * pow(max(0.0, dot(h, nnormal)), shininess);
   }
 
-  gl_FragColor = vec4(
-      ambientcolor + intensityDiff * albedo + intensitySpec * speccolor, 1);
+  gl_FragColor = vec4(intensityDiff * albedo + intensitySpec * speccolor, 1);
 }

@@ -39,7 +39,6 @@ namespace FuseeApp
                     new EffectParameterDeclaration { Name = "shininess", Value = 0 },
                     new EffectParameterDeclaration { Name = "specfactor", Value = 0 },
                     new EffectParameterDeclaration { Name = "speccolor", Value = float3.One },
-                    new EffectParameterDeclaration { Name = "ambientcolor", Value = float3.Zero }
                 }
             );
             RC.SetShaderEffect(shaderEffect);
@@ -72,7 +71,6 @@ namespace FuseeApp
             RC.SetFXParam("specfactor", shader.Effect.GetEffectParam("SpecularIntensity"));
             RC.SetFXParam("speccolor", shader.Effect.GetEffectParam("SpecularColor"));
             RC.SetFXParam("albedo", shader.Effect.GetEffectParam("DiffuseColor"));
-            RC.SetFXParam("ambientcolor", shader.Effect.GetEffectParam("allLights[0].intensities"));
         }
         [VisitMethod]
         void OnTransform(TransformComponent xform)

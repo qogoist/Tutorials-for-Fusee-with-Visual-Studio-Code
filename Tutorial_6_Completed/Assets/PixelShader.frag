@@ -9,7 +9,6 @@ uniform vec3 albedo;
 uniform float shininess;
 uniform float specfactor;
 uniform vec3 speccolor;
-uniform vec3 ambientcolor;
 uniform sampler2D texture;
 uniform float texmix;
 
@@ -29,6 +28,5 @@ void main() {
     intensitySpec = specfactor * pow(max(0.0, dot(h, nnormal)), shininess);
   }
 
-  gl_FragColor = vec4(
-      ambientcolor + intensityDiff * resultingAlbedo + intensitySpec * speccolor, 1);
+  gl_FragColor = vec4(intensityDiff * resultingAlbedo + intensitySpec * speccolor, 1);
 }
