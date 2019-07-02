@@ -181,6 +181,8 @@ To enable advanced visual effects it is often necessary to combine the output of
 
 Such combinations of applying several render passes with different shaders and different settigns are very often called "Effects" (FX). Hence, why we are using FUSEE's support class called `ShaderEffect`, which allows us to define effects in a convenient way.
 
+See [Tutorial 6 Completed](../Tutorial_6_Completed) for the overall state so far.
+
 ## Exercise
 * Prepare your Renderer to handle geometry with more than one texture.
   * Implement a texture-lookup (using a `Dictionary<string, ITexture>` object).
